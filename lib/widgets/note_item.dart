@@ -1,7 +1,8 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:crud_app/widgets/note_dialog.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:crud_app/services/firestore_services.dart';
+import 'package:crud_app/widgets/note_dialog.dart';
+import 'package:crud_app/pages/detail_page.dart'; // Import DetailPage
 
 class NoteItem extends StatelessWidget {
   final DocumentSnapshot document;
@@ -20,6 +21,7 @@ class NoteItem extends StatelessWidget {
     final String noteText = data['note'] ?? 'Untitled Note';
     final String description = data['description'] ?? 'No description';
     final Color noteColor = _parseColor(data['color']);
+    final Timestamp timestamp = data['timestamp'];
 
     return Container(
       margin: const EdgeInsets.all(10),
@@ -45,7 +47,7 @@ class NoteItem extends StatelessWidget {
         subtitle: Text(
           description,
           style: const TextStyle(
-            color: Colors.white60,
+            color: Colors.white70,
           ),
         ),
         contentPadding: const EdgeInsets.all(10),
@@ -54,20 +56,31 @@ class NoteItem extends StatelessWidget {
           children: [
             IconButton(
               icon: const Icon(Icons.edit),
-              color: Colors.white60,
               onPressed: () {
                 _openEditNoteDialog(context, docId, noteText, description);
               },
             ),
             IconButton(
               icon: const Icon(Icons.delete),
-              color: Colors.white60,
               onPressed: () {
                 firestoreService.deleteNote(docId);
               },
             ),
           ],
         ),
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => DetailPage(
+                noteTitle: noteText,
+                noteDescription: description,
+                noteColor: noteColor,
+                timestamp: timestamp,
+              ),
+            ),
+          );
+        },
       ),
     );
   }

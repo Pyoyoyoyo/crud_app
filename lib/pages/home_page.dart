@@ -5,10 +5,18 @@ import 'package:crud_app/widgets/empty_state.dart';
 import 'package:crud_app/widgets/note_item.dart';
 import 'package:crud_app/widgets/note_dialog.dart';
 
-class HomePage extends StatelessWidget {
-  final FirestoreService firestoreService = FirestoreService();
+class HomePage extends StatefulWidget {
+  final VoidCallback toggleTheme;
 
-  HomePage({super.key});
+  const HomePage({super.key, required this.toggleTheme});
+
+  @override
+  _HomePageState createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  final FirestoreService firestoreService = FirestoreService();
+  String searchQuery = "";
 
   @override
   Widget build(BuildContext context) {
@@ -17,6 +25,12 @@ class HomePage extends StatelessWidget {
         title: const Text('Notes App'),
         backgroundColor: Colors.black,
         foregroundColor: Colors.white,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.brightness_6),
+            onPressed: widget.toggleTheme,
+          ),
+        ],
       ),
       floatingActionButton: FloatingActionButton(
         backgroundColor: Colors.grey.shade900,
@@ -34,29 +48,63 @@ class HomePage extends StatelessWidget {
             end: Alignment.bottomRight,
           ),
         ),
-        child: StreamBuilder<QuerySnapshot>(
-          stream: firestoreService.getNotesStream(),
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return const Center(child: CircularProgressIndicator());
-            }
+        child: Column(
+          children: [
+            // Customized SearchBar
+            Padding(
+              padding: const EdgeInsets.all(10.0),
+              child: TextField(
+                onChanged: (value) {
+                  setState(() {
+                    searchQuery = value.toLowerCase();
+                  });
+                },
+                style: const TextStyle(color: Colors.white),
+                decoration: InputDecoration(
+                  hintText: 'Search notes...',
+                  hintStyle: const TextStyle(color: Colors.white70),
+                  filled: true,
+                  fillColor: Colors.black45,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide: BorderSide.none,
+                  ),
+                  prefixIcon: const Icon(Icons.search, color: Colors.white70),
+                ),
+              ),
+            ),
+            // Notes List
+            Expanded(
+              child: StreamBuilder<QuerySnapshot>(
+                stream: firestoreService.getNotesStream(),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
 
-            if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-              return const EmptyState();
-            }
+                  if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                    return const EmptyState();
+                  }
 
-            final notesList = snapshot.data!.docs;
+                  final notesList = snapshot.data!.docs.where((doc) {
+                    final data = doc.data() as Map<String, dynamic>;
+                    final title = (data['note'] ?? '').toString().toLowerCase();
+                    return title.contains(searchQuery);
+                  }).toList();
 
-            return ListView.builder(
-              itemCount: notesList.length,
-              itemBuilder: (context, index) {
-                return NoteItem(
-                  document: notesList[index],
-                  firestoreService: firestoreService,
-                );
-              },
-            );
-          },
+                  return ListView.builder(
+                    itemCount: notesList.length,
+                    itemBuilder: (context, index) {
+                      return NoteItem(
+                        document: notesList[index],
+                        firestoreService: firestoreService,
+                      );
+                    },
+                  );
+                },
+              ),
+            ),
+          ],
         ),
       ),
     );

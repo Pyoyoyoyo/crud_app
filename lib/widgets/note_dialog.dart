@@ -20,7 +20,11 @@ class NoteDialog extends StatelessWidget {
         TextEditingController(text: initialDescription);
 
     return AlertDialog(
-      title: Text(initialTitle == null ? 'Add Note' : 'Edit Note'),
+      backgroundColor: Colors.black87,
+      title: Text(
+        initialTitle == null ? 'Add Note' : 'Edit Note',
+        style: TextStyle(color: Colors.white),
+      ),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -28,6 +32,7 @@ class NoteDialog extends StatelessWidget {
             controller: titleController,
             hint: 'Enter your note title',
           ),
+          const SizedBox(height: 10),
           _buildTextField(
             controller: descriptionController,
             hint: 'Enter your note description',
@@ -43,7 +48,10 @@ class NoteDialog extends StatelessWidget {
             );
             Navigator.of(context).pop();
           },
-          child: Text(initialTitle == null ? 'Add' : 'Update'),
+          child: Text(
+            initialTitle == null ? 'Add' : 'Update',
+            style: TextStyle(color: Colors.white),
+          ),
         ),
       ],
     );
@@ -55,7 +63,14 @@ class NoteDialog extends StatelessWidget {
   }) {
     return TextField(
       controller: controller,
-      decoration: InputDecoration(hintText: hint),
+      style: TextStyle(color: Colors.white),
+      decoration: InputDecoration(
+        hintText: hint,
+        hintStyle: TextStyle(color: Colors.white70),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(15),
+        ),
+      ),
     );
   }
 }
