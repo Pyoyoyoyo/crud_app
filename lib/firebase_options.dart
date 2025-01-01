@@ -65,4 +65,5 @@ class DefaultFirebaseOptions {
     storageBucket: 'crud-app-e9aa9.firebasestorage.app',
     iosBundleId: 'com.example.crudApp',
   );
+
 }
